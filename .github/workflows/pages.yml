@@ -2,7 +2,9 @@ name: Deploy frontend2 to GitHub Pages
 
 # Builds the static Wall dApp (frontend2/) and publishes it to GitHub Pages.
 # Fully static: the LUKSO chain is the signaling bus, Envio/STUN/RPC are all
-# public endpoints, there is no backend. Users need a UP browser extension.
+# public endpoints, there is no backend. Users connect with the UP browser
+# extension or UP Mobile (WalletConnect; optional VITE_WALLETCONNECT_PROJECT_ID
+# secret, else up-modal's shared LUKSO project id).
 #
 # Base path is /<repo>/ for a project Pages site. Override TURN at build time
 # with VITE_TURN_URL / VITE_TURN_USERNAME / VITE_TURN_CREDENTIAL repo secrets
@@ -46,6 +48,7 @@ jobs:
           VITE_TURN_URL: ${{ secrets.VITE_TURN_URL }}
           VITE_TURN_USERNAME: ${{ secrets.VITE_TURN_USERNAME }}
           VITE_TURN_CREDENTIAL: ${{ secrets.VITE_TURN_CREDENTIAL }}
+          VITE_WALLETCONNECT_PROJECT_ID: ${{ secrets.VITE_WALLETCONNECT_PROJECT_ID }}
         run: npm run build
       - name: SPA fallback (404 -> index)
         run: cp dist/index.html dist/404.html

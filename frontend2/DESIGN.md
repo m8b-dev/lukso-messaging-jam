@@ -30,6 +30,12 @@ a raw controller key (the extension's signature bytes may differ from a raw
 personal_sign, which would make the key unreproducible). This is why the flow is
 per-UP, step by step.
 
+Wallets connect through the LUKSO connect modal (`@lukso/up-modal`: UP Browser
+Extension or UP Mobile via WalletConnect; EOAs hidden). The key is reproducible
+per **controller**, not per UP: the same UP via UP Mobile vs. the extension
+derives a different convPub. Announce.tsx / Wall.tsx `KeyStatus` therefore never
+replace a different published key without an explicit second click.
+
 ## Peers (lab UPs for you to DM)
 - alice UP `0xA02B2b0cB13a87824B0e42C951de3B1a20ECbA5C`
 - bob   UP `0xf380f128b69c5EC2dffafC7Dd3f80DFDed0f509C`

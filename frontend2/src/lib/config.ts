@@ -74,6 +74,15 @@ export const ICE_SERVERS: RTCIceServer[] = [
 export const ENVIO_GRAPHQL =
   'https://envio.lukso-mainnet.universal.tech/v1/graphql';
 
+/**
+ * WalletConnect (Reown) project id for the UP Mobile option in the connect
+ * modal (@lukso/up-modal). Optional: unset (or empty) uses the package's shared
+ * LUKSO default. A production deploy should set its own via
+ * VITE_WALLETCONNECT_PROJECT_ID — it ships in the bundle, so it's public anyway.
+ */
+export const WALLETCONNECT_PROJECT_ID: string | undefined =
+  (import.meta.env?.VITE_WALLETCONNECT_PROJECT_ID as string | undefined) || undefined;
+
 /** LUKSO explorer for linking out to a UP / tx. */
 export const EXPLORER = 'https://explorer.lukso.network';
 

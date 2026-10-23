@@ -1,4 +1,5 @@
-// Connect.tsx — step 1: connect any Universal Profile via the UP extension.
+// Connect.tsx — step 1: connect any Universal Profile via the LUKSO connect
+// modal (UP Browser Extension or UP Mobile).
 //
 // The welcome page: the UP Dawg mascot (a dog's head poking out of a hot-dog
 // bun, riding a weiner, mid-boogie), a sharp/funny pitch, a "What's UP, Dawg?"
@@ -7,6 +8,7 @@ import { useState } from 'react';
 import { useApp } from '../state/app';
 import { connectUp } from '../lib/up';
 import { initType3Probe } from '../lib/transport';
+import { BLOBS_ENABLED } from '../lib/config';
 
 /**
  * DancingDawg — the mascot: a weiner in a bun with a dog's head popping out of
@@ -90,8 +92,11 @@ export function Connect() {
       const up = await connectUp();
       dispatch({ type: 'connected', up });
       // Probe blob (Type-3) support in the background; forces text lane if the
-      // wallet clearly can't sign Type-3 (the composer surfaces why).
-      void initType3Probe(up.eip1193);
+      // wallet clearly can't sign Type-3 (the composer surfaces why). Skipped
+      // (→ 'unknown') when the blob lane is off, and over WalletConnect, where
+      // the probe's eth_signTransaction would pop an unasked-for request on
+      // the user's phone.
+      void initType3Probe(BLOBS_ENABLED && !up.viaWalletConnect ? up.eip1193 : null);
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -112,7 +117,9 @@ export function Connect() {
         {busy ? 'Connecting…' : '🐾 Connect Universal Profile'}
       </button>
       {err && <p className="error">{err}</p>}
-      <p className="hint">Needs the UP Browser Extension. Any Universal Profile will do.</p>
+      <p className="hint">
+        Use the UP Browser Extension or the UP Mobile app. Any Universal Profile will do.
+      </p>
 
       <section className="whatsup">
         <h2>What’s UP, Dawg? 🐶</h2>

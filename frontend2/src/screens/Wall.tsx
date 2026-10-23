@@ -231,6 +231,9 @@ function KeyStatus({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [tx, setTx] = useState<string | null>(null);
+  // A DIFFERENT conv key already on-chain (same UP via another wallet): shown
+  // as a warning, and replacing it takes a second, explicit click.
+  const [published, setPublished] = useState<string | null>(null);
   const wrap = useRef<HTMLDivElement | null>(null);
   const myConvPub = useMemo(() => convPubToBytes32(up!.convPub), [up]);
 
@@ -253,9 +256,20 @@ function KeyStatus({
     setBusy(true);
     setErr(null);
     try {
+      // Only write over nothing, or over the exact key the warning showed
+      // (same rule as Announce.tsx).
+      const onchain = await convPubOf(up!.address);
+      if (onchain && onchain.toLowerCase() === myConvPub.toLowerCase()) {
+        dispatch({ type: 'announced', up: up! });
+        return;
+      }
+      if (onchain && onchain.toLowerCase() !== published?.toLowerCase()) {
+        setPublished(onchain);
+        return;
+      }
       const hash = await announceConvPub(up!.signer, myConvPub);
       setTx(hash);
-      dispatch({ type: 'announced' });
+      dispatch({ type: 'announced', up: up! });
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     } finally {
@@ -277,7 +291,11 @@ function KeyStatus({
         <div className="keypop" role="dialog" aria-label="Conversation key status">
           <div className="keypop-head">
             <span className={announced ? 'ok' : 'warn'}>
-              {announced ? '🔑 Key announced' : '⚠️ Key not announced'}
+              {announced
+                ? '🔑 Key announced'
+                : published
+                  ? '⚠️ Different key published'
+                  : '⚠️ Key not announced'}
             </span>
             <button className="keypop-x" aria-label="Close" onClick={() => setOpen(false)}>×</button>
           </div>
@@ -296,10 +314,17 @@ function KeyStatus({
               <a href={`${EXPLORER}/tx/${tx}`} target="_blank" rel="noreferrer">{tx.slice(0, 10)}…</a>
             </p>
           )}
+          {published && !announced && (
+            <p className="warn small">
+              This wallet uses a different messaging key. Replacing your published key
+              can prevent you and your contacts from reading earlier DMs. Use your
+              original wallet to keep its key.
+            </p>
+          )}
           {err && <p className="error small">{err}</p>}
           {!announced && !tx && (
             <button className="keypop-cta" disabled={busy} onClick={announce}>
-              {busy ? 'Announcing…' : 'Announce key'}
+              {busy ? 'Announcing…' : published ? 'Replace published key' : 'Announce key'}
             </button>
           )}
         </div>
