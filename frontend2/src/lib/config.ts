@@ -119,12 +119,13 @@ export function ipfsToHttp(url: string | null | undefined): string | null {
  * older blob returns 404 (body gone, hash still on-chain). Override with
  * VITE_BEACON_URL. Note: the public EL host also answers the beacon API.
  *
- * BROWSER CORS CAVEAT (2026-10-22): the public LUKSO beacon endpoint answers
- * 200 but sends NO `access-control-allow-origin` header, so a browser blocks it
- * (confirmed from the GitHub Pages origin). Blob-BODY recovery for display
- * therefore needs a CORS-enabled beacon/blob node (a blobscan-style API or a
- * small CORS proxy) — set VITE_BEACON_URL to that. POSTING a blob and the LSP25
- * signature test do NOT use the beacon, so they work regardless.
+ * BROWSER CORS (re-verified 2026-10-23): the default host now reflects
+ * `access-control-allow-origin` on BOTH the GET and the OPTIONS preflight for
+ * `/eth/v1/beacon/blob_sidecars/{slot}` (checked from the GitHub Pages origin;
+ * `allow-methods: GET, OPTIONS`). So blob-BODY recovery works direct from the
+ * browser with the default — no proxy required. (`explorer.consensus.mainnet.
+ * lukso.network` is also CORS-open; `beaconcha.in` needs an API key = unusable
+ * anonymously.) Override with VITE_BEACON_URL only if this ever regresses.
  */
 export const BEACON_URL: string =
   (import.meta.env?.VITE_BEACON_URL as string | undefined) ??
@@ -142,15 +143,31 @@ export const BEACON_URL: string =
 export type Transport = 'blob' | 'text';
 
 /**
- * Is the blob lane AVAILABLE as a posting option at all? Gated on a configured
- * blob relayer: without VITE_BLOB_RELAYER_URL there is nothing to carry a blob,
- * so the whole feature is hidden and Text is the only lane. (Reading still
- * handles already-posted blobs regardless — this only governs NEW posts / the
- * UI toggle.) Set VITE_BLOBS_ENABLED=0 to force-hide it even with a relayer.
+ * Is a gas-less blob RELAYER configured? When true, blob posts can be submitted
+ * by the relayer (PostedBlob.from = the UP) and the user pays no gas. When
+ * false, a blob can still be posted by the user's own wallet IF it signs Type-3
+ * (self-send, below). This only reports the relayer's presence — not whether
+ * blobs are available at all (see BLOBS_ENABLED).
+ */
+export const RELAYER_CONFIGURED: boolean =
+  !!(import.meta.env?.VITE_BLOB_RELAYER_URL as string | undefined);
+
+/**
+ * Is the blob lane AVAILABLE as a posting option at all? Two independent ways to
+ * carry a blob now, so it is NOT gated on a relayer:
+ *   - a relayer is configured (gas-less, relayer submits), OR
+ *   - the deploy opts in with VITE_BLOBS_ENABLED=1 so the user can SELF-SEND a
+ *     Type-3 blob tx from their own controller wallet (user pays gas). Whether
+ *     their wallet can actually do Type-3 is probed at connect (transport.ts);
+ *     if it can't and there's no relayer, the lane falls back to text.
+ * Set VITE_BLOBS_ENABLED=0 to force-hide the lane even with a relayer.
+ * (Reading already-posted blobs always works regardless — this governs only NEW
+ * posts / the UI toggle.)
  */
 export const BLOBS_ENABLED: boolean =
-  !!(import.meta.env?.VITE_BLOB_RELAYER_URL as string | undefined) &&
-  (import.meta.env?.VITE_BLOBS_ENABLED as string | undefined) !== '0';
+  (import.meta.env?.VITE_BLOBS_ENABLED as string | undefined) !== '0' &&
+  (RELAYER_CONFIGURED ||
+    (import.meta.env?.VITE_BLOBS_ENABLED as string | undefined) === '1');
 
 export const DEFAULT_TRANSPORT: Transport = !BLOBS_ENABLED
   ? 'text'
@@ -178,10 +195,11 @@ export const DEFAULT_TRANSPORT: Transport = !BLOBS_ENABLED
  *        validityTimestamps, payload, blob } -> { txHash }
  *        (blob = 0x-hex of the 128 KB field-element-encoded blob)
  *
- * If VITE_BLOB_RELAYER_URL is unset: blob posts still run the SIGNATURE TEST
- * (keyManager read on-chain, nonce 0) and surface what the extension did, but
- * nothing is submitted. Direct Type-3 is used only outside the relay path (works
- * only if the wallet signs Type-3). See docs/BLOB-ARCHITECTURE.md §relay.
+ * If VITE_BLOB_RELAYER_URL is unset but the lane is enabled (VITE_BLOBS_ENABLED=1):
+ * blob posts SELF-SEND — the user's own wallet sends the Type-3 tx and pays gas
+ * (PostedBlob.from = the controller/UP). Works only if the wallet signs Type-3;
+ * otherwise the lane falls back to text at connect. See docs/BLOB-ARCHITECTURE.md
+ * §relay. wall.ts sendBlobPost auto-selects: relay when configured, else self-send.
  */
 export const BLOB_RELAYER_URL: string | null =
   (import.meta.env?.VITE_BLOB_RELAYER_URL as string | undefined) ?? null;
@@ -203,6 +221,44 @@ export const LSP25_VERSION = 25;
 export const WALL_ADDRESS: string =
   (import.meta.env?.VITE_WALL_ADDRESS as string | undefined) ??
   '0x480f1913A546E99e34B313ab7c9dDFc294aF2c07';
+
+/**
+ * CREDIT TOKEN (TEST) — the soulbound relay-credit LSP7 owned by the "dawgtestup"
+ * service UP. Proven end-to-end in poc/lab-ups (svc-up-topology + relayer-scoped-
+ * controller): the service UP owns the token, and a least-privilege relayer
+ * controller may ONLY drive token.mint. This is wired into the dev Credits panel
+ * (Wall screen) so the gated-airdrop / balance / soulbound flow is clickable in
+ * the browser. NOT final branding, NOT production. Override via VITE_CREDIT_TOKEN
+ * / VITE_SVC_UP for a different test deploy.
+ */
+export const CREDIT_TOKEN_ADDRESS: string =
+  (import.meta.env?.VITE_CREDIT_TOKEN as string | undefined) ??
+  '0x900eA91d192953B67E0d9113343eF6f2aF324038';
+
+/** The service UP that owns the credit token + vault (airdrop gate follows it). */
+export const SERVICE_UP_ADDRESS: string =
+  (import.meta.env?.VITE_SVC_UP as string | undefined) ??
+  '0xD8711a18AC3b052A55cDc814418a6Ddd2e765655';
+
+/**
+ * Credit RELAYER endpoint (poc/lab-ups/credit-relayer-service.mjs). The browser
+ * can't mint (no owner/controller key, and the UP extension can't sign the LSP25
+ * raw digest), so the gated airdrop mint is driven by this scoped-controller
+ * service. Reads (balance/soulbound) go straight to chain and need no relayer.
+ * Unset -> the Credits panel shows balances read-only and disables Claim.
+ *   GET  {url}/gate?up=    -> { eligible, hasLsp3, follows }
+ *   GET  {url}/balance?up= -> { balance, soulbound, free }
+ *   POST {url}/claim {up}  -> { txHash, minted }
+ */
+export const CREDIT_RELAYER_URL: string | null =
+  (import.meta.env?.VITE_CREDIT_RELAYER_URL as string | undefined) ?? null;
+
+/** Show the dev Credits panel in the wall. Default on; set VITE_CREDITS_PANEL=0 to hide. */
+export const CREDITS_PANEL_ENABLED: boolean =
+  (import.meta.env?.VITE_CREDITS_PANEL as string | undefined) !== '0';
+
+/** LSP26 Follower System (mainnet) — the airdrop gate's follow edge. */
+export const LSP26_ADDRESS = '0xf01103E5a9909Fc0DBe8166dA7085e0285daDDcA';
 
 /** Known lab peers you can DM out of the box. */
 export const KNOWN_PEERS: { name: string; address: string }[] = [

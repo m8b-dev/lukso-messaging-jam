@@ -26,12 +26,15 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "typescript": "^5.6.3",
-    "vite": "^5.4.10"
+    "vite": "6.4.5"
   },
   "allowScripts": {
-    "esbuild@0.21.5": true
+    "esbuild@0.25.12": true
   },
   "overrides": {
-    "solidity-bytes-utils": "0.8.4"
+    "solidity-bytes-utils": "0.8.4",
+    "@tailwindcss/typography": {
+      "postcss-selector-parser": "7.1.6"
+    }
   }
 }

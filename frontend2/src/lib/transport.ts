@@ -2,7 +2,12 @@
 // Type-3 capability. Tiny global store + React hook so the composer and the DM
 // box share one setting without threading props through the whole tree.
 import { useEffect, useState } from 'react';
-import { DEFAULT_TRANSPORT, BLOBS_ENABLED, type Transport } from './config';
+import {
+  DEFAULT_TRANSPORT,
+  BLOBS_ENABLED,
+  RELAYER_CONFIGURED,
+  type Transport,
+} from './config';
 import { probeType3, type Type3Support } from './blob';
 import { ethers } from 'ethers';
 
@@ -27,19 +32,30 @@ export function getType3(): Type3Support {
 }
 
 /**
- * Probe the connected wallet once for Type-3 (blob tx) support. If it clearly
- * can't sign Type-3, force the transport to text so a blob-default user isn't
- * stuck — the UI shows why. Call after connect.
+ * Probe the connected wallet once for Type-3 (blob tx) support. Type-3 only
+ * matters for SELF-SEND (no relayer): if there is no relayer AND the wallet
+ * can't sign Type-3, a blob can't be carried at all, so fall back to text. With
+ * a relayer configured, the relayer submits the blob, so a no-Type-3 wallet
+ * still posts blobs fine and we leave the transport alone. Call after connect.
  */
 export async function initType3Probe(
   provider: ethers.Eip1193Provider | null | undefined,
 ): Promise<Type3Support> {
   type3 = await probeType3(provider);
-  if (type3 === 'no' && current === 'blob') {
+  if (type3 === 'no' && current === 'blob' && !RELAYER_CONFIGURED) {
     current = 'text';
   }
   emit();
   return type3;
+}
+
+/**
+ * Can a blob actually be SELF-SENT right now? True only when the connected
+ * wallet signs Type-3. Used by the composer to label the submit path (relay vs
+ * self-send) and by the lane guard when no relayer is configured.
+ */
+export function canSelfSend(): boolean {
+  return type3 === 'yes';
 }
 
 export function useTransport(): {

@@ -1,0 +1,36 @@
+{
+  "network": "lukso-mainnet",
+  "steps": {
+    "deploy": {
+      "vault": "0xe3e10f58Cf41D7a2192a45440bA2FEA0F4c3fc8D",
+      "owner": "0x80B890Cd922925d0D74c99c9FaC3f17a66640135"
+    },
+    "receive": {
+      "vaultLyx": "10000000000000000",
+      "vaultCredit": "1000000000000000000"
+    },
+    "ownerMove": {
+      "before": "10000000000000000",
+      "after": "7000000000000000"
+    },
+    "handover": {
+      "pendingWas": "0xA02B2b0cB13a87824B0e42C951de3B1a20ECbA5C",
+      "owner": "0xA02B2b0cB13a87824B0e42C951de3B1a20ECbA5C",
+      "isControlUp": true
+    },
+    "governedMove": {
+      "before": "7000000000000000",
+      "after": "5000000000000000",
+      "ok": true
+    },
+    "negative": {
+      "blocked": true,
+      "vaultLyxUnchanged": true
+    }
+  },
+  "verdict": "PASS",
+  "totalSpentLYX": "0.005031",
+  "vault": "0xe3e10f58Cf41D7a2192a45440bA2FEA0F4c3fc8D",
+  "vaultLyxFinal": "5000000000000000",
+  "vaultCreditFinal": "1000000000000000000"
+}

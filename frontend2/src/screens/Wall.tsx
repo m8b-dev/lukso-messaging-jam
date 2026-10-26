@@ -40,8 +40,9 @@ import {
   mergeConversations,
   type Conversation,
 } from '../lib/conversations';
-import { EXPLORER, ipfsToHttp, BLOBS_ENABLED } from '../lib/config';
+import { EXPLORER, ipfsToHttp, BLOBS_ENABLED, RELAYER_CONFIGURED, CREDITS_PANEL_ENABLED } from '../lib/config';
 import { SignProgress, type SignPhase } from './SignProgress';
+import { CreditsPanel } from './CreditsPanel';
 import { ethers } from 'ethers';
 import {
   P2pDriver,
@@ -56,6 +57,7 @@ type View =
   | { kind: 'thread'; rootId: number }
   | { kind: 'mentions' }
   | { kind: 'people' }
+  | { kind: 'credits' }
   | { kind: 'profile'; address: string }
   | { kind: 'dm'; name: string; address: string };
 
@@ -567,6 +569,12 @@ export function Wall() {
             onClick={() => openSection({ kind: 'people' })}>
             🌐 Discover{roster.length > 0 && <span className="badge">{roster.length}</span>}
           </button>
+          {CREDITS_PANEL_ENABLED && (
+            <button className={view.kind === 'credits' ? 'stab active' : 'stab'}
+              onClick={() => openSection({ kind: 'credits' })}>
+              🪙 Credits
+            </button>
+          )}
         </nav>
 
         <ul className="convlist">
@@ -598,6 +606,9 @@ export function Wall() {
             onBack={() => setMobilePane('list')} />
         ) : view.kind === 'people' ? (
           <SectionHeader title="🌐 Discover" subtitle="Universal Profiles that announced an encryption key"
+            onBack={() => setMobilePane('list')} />
+        ) : view.kind === 'credits' ? (
+          <SectionHeader title="🪙 Credits (test)" subtitle="Soulbound relay-credit token on the dawgtestup service UP"
             onBack={() => setMobilePane('list')} />
         ) : view.kind === 'profile' ? (
           <SectionHeader title="👤 Profile" subtitle="This profile's posts and mentions"
@@ -634,6 +645,8 @@ export function Wall() {
             <MentionsPane me={meLc} feed={mentions} openThread={openThread} openProfile={openProfile} />
           ) : view.kind === 'people' ? (
             <DiscoverPane me={meLc} roster={roster} openDm={openDm} />
+          ) : view.kind === 'credits' ? (
+            <CreditsPanel up={up} />
           ) : view.kind === 'profile' ? (
             <ProfilePane
               me={meLc}
@@ -827,8 +840,10 @@ function ConvRow({
  *   🫧 Blob  = default / cheap / promoted. Body rides an ephemeral EIP-4844
  *              blob (~18 days on the beacon), only its hash is anchored forever.
  *              After that it survives only in your cache or a 3rd-party blob
- *              archive (possibly paywalled, Slack-style). Hidden entirely when
- *              no blob relayer is configured (config.BLOBS_ENABLED).
+ *              archive (possibly paywalled, Slack-style). Available when the lane
+ *              is enabled (config.BLOBS_ENABLED) — gas-less via a relayer when
+ *              one is up, otherwise self-sent by the wallet (user pays gas, needs
+ *              Type-3). Hidden only if VITE_BLOBS_ENABLED=0.
  *   📝 Text  = premium / permanent. Body lives in calldata forever — the
  *              unforgettable lane; costs more gas.
  */
@@ -854,9 +869,13 @@ function TransportToggle() {
         <button
           className={transport === 'blob' ? 'seg-on' : ''}
           disabled={blobBlocked}
-          title="Cheap & default. Body rides an EIP-4844 blob (~18 days), then lives only in your cache or a 3rd-party archive. Just its hash is anchored on-chain."
+          title={
+            RELAYER_CONFIGURED
+              ? 'Gas-less via relayer. Body rides an EIP-4844 blob (~18 days), then lives only in your cache or a 3rd-party archive. Just its hash is anchored on-chain.'
+              : 'Self-sent by your wallet (you pay gas; needs a Type-3-capable wallet). Body rides an EIP-4844 blob (~18 days); just its hash is anchored on-chain.'
+          }
           onClick={() => setTransport('blob')}
-        >🫧 Blob · cheap</button>
+        >🫧 Blob · {RELAYER_CONFIGURED ? 'cheap' : 'you pay gas'}</button>
         <button
           className={transport === 'text' ? 'seg-on' : ''}
           title="Premium & permanent. Body lives in calldata forever — the unforgettable lane. Costs more gas."
@@ -867,7 +886,9 @@ function TransportToggle() {
         {blobBlocked
           ? 'Wallet can’t sign blob (Type-3) yet — using Text.'
           : transport === 'blob'
-            ? '🫧 Cheap & fleeting — gone in ~18 days unless you (or an archive) keep it.'
+            ? RELAYER_CONFIGURED
+              ? '🫧 Gas-less & fleeting — gone in ~18 days unless you (or an archive) keep it.'
+              : '🫧 You pay gas (no relayer) & fleeting — gone in ~18 days unless kept.'
             : '📝 Premium & permanent — an unforgettable post, on-chain forever.'}
       </div>
     </div>

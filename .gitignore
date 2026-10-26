@@ -13,3 +13,12 @@ poc/up-wg-handshake/e2e-lab/*-state.json
 
 # third-party reference clones (tools-mock-relayer); fork point documented in poc/lab-ups spike
 vendor/
+
+# Local credentials, runtime ledgers and generated bundles
+.env
+.env.*
+!.env.example
+.*-key.json
+**/dist/
+poc/lab-ups/credit-relayer-service-state.json
+*.state.lock

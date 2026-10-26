@@ -14,5 +14,12 @@
     "kmAddress": "0xea3ee1808432291cCc9054D8006B9B9B86D4cc9b",
     "deployTx": "0x84d7fdcde490c92775480ecfde849cd75e92de413aa1c4d02a87a20345a81c4d",
     "fundedUp": true
+  },
+  "svc": {
+    "controller": "0xc7F728c2c4B32A5648Ae2886F263B396BBE94778",
+    "salt": "0xf5b98d4e582c140fc970161c2e5ec962616c872015be944cc2cd1f6f0aee3f88",
+    "upAddress": "0xD8711a18AC3b052A55cDc814418a6Ddd2e765655",
+    "kmAddress": "0x767D7DDa0019838eF2ABF9936d9965FC495b3E79",
+    "deployTx": "0xacb401c09712797da682fcaac743f480e8080da68af5e94367b23a415b70b1fa"
   }
 }

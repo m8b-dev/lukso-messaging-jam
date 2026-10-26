@@ -1,0 +1,41 @@
+{
+  "network": "lukso-mainnet",
+  "topology": "relayer-scoped-controller",
+  "svcUp": "0xD8711a18AC3b052A55cDc814418a6Ddd2e765655",
+  "svcKm": "0x767D7DDa0019838eF2ABF9936d9965FC495b3E79",
+  "token": "0x900eA91d192953B67E0d9113343eF6f2aF324038",
+  "vault": "0xFa1bc7c4F8a85C0BE415dA85a63B4fC49ee9a679",
+  "relayer": "0x80B890Cd922925d0D74c99c9FaC3f17a66640135",
+  "steps": {
+    "read": {
+      "curLen": 2,
+      "relayerIdx": 1
+    },
+    "addController": {
+      "index": 1,
+      "permissions": "0x0000000000000000000000000000000000000000000000000000000000400800",
+      "allowedCallsSet": true,
+      "allowedCalls": "0x002000000002900ea91d192953b67e0d9113343ef6f2af324038ffffffff7580d920"
+    },
+    "positiveMint": {
+      "status": 1,
+      "before": "10000000000000000000",
+      "after": "11000000000000000000",
+      "ok": true
+    },
+    "negVaultTarget": {
+      "blocked": true,
+      "unchanged": true
+    },
+    "negSelector": {
+      "blocked": true,
+      "transferSel": "0x760d9bba"
+    },
+    "negEscalate": {
+      "blocked": true,
+      "stillScoped": true
+    }
+  },
+  "verdict": "PASS",
+  "totalSpentLYX": "0.000703"
+}

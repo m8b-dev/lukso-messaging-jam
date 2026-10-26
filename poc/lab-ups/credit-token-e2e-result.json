@@ -1,0 +1,40 @@
+{
+  "network": "lukso-mainnet",
+  "tokenNames": {
+    "name": "Test Credit",
+    "symbol": "TCRED"
+  },
+  "steps": {
+    "deploy": {
+      "token": "0xDD218a35d5B64AF57257fbe75CECb0A787A7F3EF",
+      "cap": "1000000000000000000000000",
+      "treasury": "0x80B890Cd922925d0D74c99c9FaC3f17a66640135"
+    },
+    "airdrop": {
+      "balance": "10000000000000000000",
+      "soulbound": "10000000000000000000"
+    },
+    "soulboundBlock": {
+      "blocked": true,
+      "aliceBalance": "10000000000000000000",
+      "bobBalance": "0"
+    },
+    "authorize": {
+      "bounded": "3000000000000000000"
+    },
+    "clawback": {
+      "aliceAfter": "9000000000000000000",
+      "soulboundAfter": "9000000000000000000",
+      "treasuryGained": "1000000000000000000",
+      "allowanceAfter": "2000000000000000000"
+    },
+    "freeVsLocked": {
+      "treasurySoulbound": "0",
+      "bobBalance": "2000000000000000000",
+      "bobSoulbound": "0",
+      "aliceStillLocked": "9000000000000000000"
+    }
+  },
+  "verdict": "PASS",
+  "totalSpentLYX": "0.004900"
+}

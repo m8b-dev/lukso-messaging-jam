@@ -1,0 +1,27 @@
+name: Verify test credits
+on:
+  push:
+    branches: ['feat/updawg-credit-vpn']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --ignore-scripts
+        working-directory: poc
+      - run: npm run compile:credits && npm run test:credits && node --test lab-ups/credit-relayer-test.mjs
+        working-directory: poc
+      - run: npm ci
+        working-directory: frontend2
+      - run: npm run typecheck && npm run build
+        working-directory: frontend2
+        env:
+          VITE_BLOBS_ENABLED: '1'
+# No wallet keys, network transactions, deployment credentials or private VPN
+# endpoints are used by this job. Pages deployment remains master-only.

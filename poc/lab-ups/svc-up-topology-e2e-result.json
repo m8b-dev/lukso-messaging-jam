@@ -1,0 +1,54 @@
+{
+  "network": "lukso-mainnet",
+  "topology": "service-UP-owns-token+vault",
+  "tokenNames": {
+    "name": "Test Credit",
+    "symbol": "TCRED"
+  },
+  "lsp3Name": "dawgtestup",
+  "steps": {
+    "deployUp": {
+      "svcUp": "0xD8711a18AC3b052A55cDc814418a6Ddd2e765655",
+      "svcKm": "0x767D7DDa0019838eF2ABF9936d9965FC495b3E79",
+      "controller": "0xc7F728c2c4B32A5648Ae2886F263B396BBE94778",
+      "deployTx": "0xacb401c09712797da682fcaac743f480e8080da68af5e94367b23a415b70b1fa"
+    },
+    "lsp3": {
+      "len": 213,
+      "name": "dawgtestup"
+    },
+    "deployOwned": {
+      "token": "0x900eA91d192953B67E0d9113343eF6f2aF324038",
+      "tokenOwnerIsSvcUp": true,
+      "vault": "0xFa1bc7c4F8a85C0BE415dA85a63B4fC49ee9a679",
+      "vaultOwnerIsSvcUp": true,
+      "treasuryIsVault": true
+    },
+    "mintThroughUp": {
+      "gateOk": true,
+      "before": "0",
+      "after": "10000000000000000000",
+      "soulbound": "10000000000000000000"
+    },
+    "governedVaultMove": {
+      "before": "10000000000000000",
+      "after": "8000000000000000",
+      "ok": true
+    },
+    "negative": {
+      "mintBlocked": true,
+      "mintUnchanged": true,
+      "vaultBlocked": true,
+      "vaultUnchanged": true
+    }
+  },
+  "verdict": "PASS",
+  "totalSpentLYX": "0.018137",
+  "addresses": {
+    "svcUp": "0xD8711a18AC3b052A55cDc814418a6Ddd2e765655",
+    "svcKm": "0x767D7DDa0019838eF2ABF9936d9965FC495b3E79",
+    "svcController": "0xc7F728c2c4B32A5648Ae2886F263B396BBE94778",
+    "token": "0x900eA91d192953B67E0d9113343eF6f2aF324038",
+    "vault": "0xFa1bc7c4F8a85C0BE415dA85a63B4fC49ee9a679"
+  }
+}

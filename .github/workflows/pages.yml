@@ -6,6 +6,11 @@ name: Deploy frontend2 to GitHub Pages
 # extension or UP Mobile (WalletConnect; optional VITE_WALLETCONNECT_PROJECT_ID
 # secret, else up-modal's shared LUKSO project id).
 #
+# Blob lane: no relayer here, so blobs SELF-SEND (VITE_BLOBS_ENABLED=1) — the
+# user's own Type-3-capable wallet sends the blob tx and pays gas; others get
+# text. Blob BODY reads work direct (the public beacon is CORS-open as of
+# 2026-10-23), no beacon proxy needed.
+#
 # Base path is /<repo>/ for a project Pages site. Override TURN at build time
 # with VITE_TURN_URL / VITE_TURN_USERNAME / VITE_TURN_CREDENTIAL repo secrets
 # (optional — STUN-only still works on friendly NATs).
@@ -42,9 +47,13 @@ jobs:
           cache-dependency-path: frontend2/package-lock.json
       - run: npm ci
       - run: npm run typecheck
-      - name: Build (Pages base + optional TURN)
+      - name: Build (Pages base + blobs self-send + optional TURN)
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
+          # No relayer on public Pages → blob posts SELF-SEND (user's wallet
+          # sends the Type-3 tx and pays gas; wallets that can't do Type-3 fall
+          # back to text automatically). Enables the blob lane without a relayer.
+          VITE_BLOBS_ENABLED: '1'
           VITE_TURN_URL: ${{ secrets.VITE_TURN_URL }}
           VITE_TURN_USERNAME: ${{ secrets.VITE_TURN_USERNAME }}
           VITE_TURN_CREDENTIAL: ${{ secrets.VITE_TURN_CREDENTIAL }}

@@ -295,17 +295,19 @@ const IFACE = new ethers.Interface(WALL_ABI);
 /**
  * Build + send a postBlob carrying `body` in a blob. Two paths:
  *
- *  1. RELAY / SIGNATURE TEST (when a RelayCtx is given and the signer exposes a
- *     provider): ask the extension to sign the LSP25 digest — the one thing only
- *     a real browser confirms. The SignOutcome (signature bytes / recovered
- *     address / rejection) is surfaced via `relay.onSign`. If a relayer is
- *     configured we also POST it and return the real Type-3 tx hash (end-to-end,
- *     PostedBlob.from = the UP; proven on mainnet, blob-sigrelay-spike.mjs). If
- *     NO relayer is configured, the signature is surfaced and we throw a
- *     RelaySignError-free sentinel so the UI knows there was nothing to submit.
+ * AUTO submit mode (relay if up, else self-send):
  *
- *  2. DIRECT: the signer sends the Type-3 tx itself. Only works if the wallet
- *     signs Type-3 (most UP extensions don't yet). PostedBlob.from = the signer.
+ *  1. RELAY (when a RelayCtx is given, the signer exposes a provider, AND a
+ *     relayer is configured): ask the extension to sign the author message, POST
+ *     it to the relayer, return the real tx hash (PostedBlob.from = the UP,
+ *     gas-less; proven on mainnet, blob-sigrelay-spike.mjs). The SignOutcome is
+ *     surfaced via `relay.onSign`.
+ *
+ *  2. SELF-SEND / DIRECT (no relayer, or no RelayCtx): the signer sends the
+ *     Type-3 tx itself and pays gas (PostedBlob.from = the signer/UP). Only works
+ *     if the wallet signs Type-3. We still fire `relay.onSign` with a self-send
+ *     outcome so the spinner narrates it. If the wallet can't do Type-3,
+ *     sendTransaction rejects and the UI surfaces it.
  */
 async function sendBlobPost(
   signer: ethers.Signer,
@@ -318,11 +320,10 @@ async function sendBlobPost(
   const blob = encodeBlob(body);
   const blobHash = await versionedHashFor(blob);
 
-  // Path 1: author-signature gas-less relay (Option B). Runs whenever a RelayCtx
-  // + provider is present — even with NO relayer — so the extension's signing
-  // behaviour can be observed in a real browser. The relayer builds the on-chain
-  // `meta` (author proof); the frontend only signs the canonical message.
-  if (relay && 'provider' in signer && signer.provider) {
+  // Path 1: author-signature gas-less relay (Option B). Only when a relayer is
+  // actually configured. The relayer builds the on-chain `meta` (author proof);
+  // the frontend signs the canonical message and the relayer submits + pays gas.
+  if (relay && relayerConfigured() && 'provider' in signer && signer.provider) {
     const signerAddress = await signer.getAddress();
     const { req, outcome } = await buildBlobRelayRequest({
       signer: signer as ethers.JsonRpcSigner,
@@ -338,19 +339,21 @@ async function sendBlobPost(
     });
     relay.onSign?.(outcome);
     if (!req) throw new RelaySignError(outcome);
-    if (!relayerConfigured()) {
-      // Signature obtained but there is nothing to submit to. Surface it as a
-      // clear, non-fatal-looking error the UI shows alongside the outcome.
-      throw new RelaySignError({
-        ...outcome,
-        error: 'signature OK — no relayer configured, nothing submitted',
-      });
-    }
     return sendViaRelayer(req);
   }
 
-  // Path 2: direct Type-3 from the signer (no relay). PostedBlob.from = signer
-  // (the UP itself), so no author proof is needed; meta carries tiny framing.
+  // Path 2: SELF-SEND — direct Type-3 from the signer (no relayer configured, or
+  // no RelayCtx). PostedBlob.from = the signer (the UP itself), so no author
+  // proof is needed; meta carries tiny framing. The user pays gas. Narrate the
+  // self-send via onSign so the spinner behaves like the relay path.
+  const selfAddr = await signer.getAddress();
+  relay?.onSign?.({
+    ok: true,
+    method: 'self-send',
+    signer: selfAddr,
+    recovered: selfAddr,
+    message: 'direct Type-3 self-send (user pays gas, no relayer)',
+  });
   const meta = enc.encode(JSON.stringify({ v: 1, len: body.length }));
   const data = IFACE.encodeFunctionData('postBlob', [
     tag,

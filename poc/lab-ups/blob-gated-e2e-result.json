@@ -1,0 +1,30 @@
+{
+  "network": "lukso-mainnet",
+  "token": "0x2b2f368fd8F70F19c31b76C60b13e83015B1c9Ff",
+  "scenarios": {
+    "relayer": {
+      "postTx": "0x968ad1b39057606d932f3b43abd617cf967c28f588d705a02cd5ff2b9e9d4b33",
+      "postedId": "28",
+      "from": "0xA02B2b0cB13a87824B0e42C951de3B1a20ECbA5C",
+      "bodyRecovered": true,
+      "creditBefore": "10000000000000000000",
+      "creditAfter": "9000000000000000000",
+      "soulboundAfter": "9000000000000000000",
+      "allowanceAfter": "0"
+    },
+    "selfSend": {
+      "postTx": "0xe638e6c2908d2d14765b9df2422f712197bbb4b32ca65030652ae55b8f85b7fd",
+      "postedId": "29",
+      "from": "0xA02B2b0cB13a87824B0e42C951de3B1a20ECbA5C",
+      "bodyRecovered": true,
+      "gasPayer": "user-controller",
+      "creditBefore": "9000000000000000000",
+      "creditAfter": "8000000000000000000",
+      "soulboundAfter": "8000000000000000000"
+    }
+  },
+  "verdict": "PASS",
+  "totalSpentLYX": "0.000007",
+  "creditFinal": "8000000000000000000",
+  "soulboundFinal": "8000000000000000000"
+}

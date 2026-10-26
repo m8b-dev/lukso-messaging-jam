@@ -1,0 +1,43 @@
+{
+  "network": "lukso-mainnet",
+  "tokenNames": {
+    "name": "Test Credit",
+    "symbol": "TCRED"
+  },
+  "N": "10",
+  "steps": {
+    "deploy": {
+      "token": "0x2b2f368fd8F70F19c31b76C60b13e83015B1c9Ff",
+      "distributor": "0x4F0502f63d982fC8F3DeC713B85174a16155bB4d",
+      "dao": "0x80B890Cd922925d0D74c99c9FaC3f17a66640135",
+      "tokenOwner": "0x4F0502f63d982fC8F3DeC713B85174a16155bB4d"
+    },
+    "rejectBare": {
+      "eligible": false,
+      "reason": "not-following-dao",
+      "claimReverts": true
+    },
+    "signalA": {
+      "lsp3Len": 47,
+      "eligible": false,
+      "reason": "not-following-dao"
+    },
+    "signalB": {
+      "follows": true
+    },
+    "airdrop": {
+      "eligible": true,
+      "balance": "10000000000000000000",
+      "soulbound": "10000000000000000000"
+    },
+    "onceOnly": {
+      "reverts": true
+    },
+    "negativeControl": {
+      "eligible": false,
+      "reason": "not-following-dao"
+    }
+  },
+  "verdict": "PASS",
+  "totalSpentLYX": "0.004114"
+}

@@ -630,3 +630,33 @@ section { margin-top: 20px; }
 .lane-badge { margin-left: 6px; border: 1px solid var(--border, #334); border-radius: 4px; padding: 0 4px; }
 /* Shown instead of the Blob/Text segment when the blob lane is disabled (no relayer). */
 .lane-note { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border, #334); border-radius: 6px; padding: 2px 8px; opacity: .85; }
+
+/* --- Credits (dev) panel ------------------------------------------------- */
+.credits-panel { padding: 16px; display: flex; flex-direction: column; gap: 18px; max-width: 520px; }
+.credit-balances { display: flex; gap: 12px; }
+.credit-stat {
+  flex: 1; background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 12px; text-align: center;
+}
+.credit-stat.big { border-color: var(--accent); }
+.credit-stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.credit-stat.big .credit-stat-value { color: var(--accent); font-size: 2rem; }
+.credit-stat-label { margin-top: 6px; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.credit-stat-hint { margin-top: 2px; }
+.credit-gate h4 { margin: 0 0 8px; font-size: .95rem; }
+.gate-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.gate-checks li { display: flex; align-items: center; gap: 8px; font-size: .95rem; }
+.gate-checks li.no { color: var(--muted); }
+.gate-checks li.ok { color: var(--ok); }
+.linklike {
+  background: none; border: none; color: var(--accent); cursor: pointer;
+  font-size: .9rem; text-decoration: underline; padding: 0 0 0 4px;
+}
+.linklike:disabled { opacity: .5; cursor: default; }
+.credit-actions { display: flex; gap: 10px; }
+.credit-msg { margin: 0; padding: 10px 12px; border-radius: 10px; font-size: .9rem; }
+.credit-msg.ok { background: rgba(63,185,80,.14); border: 1px solid var(--ok); color: var(--ok); }
+.credit-msg.err { background: rgba(248,81,73,.14); border: 1px solid var(--bad); color: var(--bad); }
+.credit-info { display: flex; flex-direction: column; gap: 3px; border-top: 1px solid var(--border); padding-top: 12px; }
+.credit-info a { color: var(--muted); }
+.credit-info a:hover { color: var(--accent); }
