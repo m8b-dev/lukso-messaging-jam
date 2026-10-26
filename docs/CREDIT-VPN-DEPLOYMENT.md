@@ -37,7 +37,7 @@ After dependency work settles, from frontend2:
 
     VITE_BASE=/vpn/wall/ VITE_CREDIT_RELAYER_URL=/vpn/creditrelay VITE_BLOB_RELAYER_URL=/vpn/blobrelay VITE_BEACON_URL=/vpn/beacon VITE_BLOBS_ENABLED=1 VITE_CREDITS_PANEL=1 npm run build
 
-Final build/browser verification pending dependency remediation at the time of this incremental note.
+Final VPN build and TypeScript check passed after dependency remediation. Headless Brave loaded the HTTPS wall with one rendered root child and zero page errors; same-origin credit health returned OK with claims disabled. This is an unauthenticated browser smoke test, not a wallet-connect or mint transaction test. Seven relayer regressions pass, including response framing and empty preflight responses.
 
 ## External files changed
 

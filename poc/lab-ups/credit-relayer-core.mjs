@@ -69,7 +69,7 @@ export function createClaims({ledger,chain,cap,sendBlockReason=null}) {
 export function createHandler({chain,claim,origins,info,addrOf}) {
  return async(req,res)=>{
   const origin=req.headers.origin;
-  const send=(code,body)=>{if(res.destroyed||res.writableEnded)return;res.writeHead(code,{'content-type':'application/json','cache-control':'no-store','vary':'Origin',...(origin&&origins.has(origin)?{'access-control-allow-origin':origin,'access-control-allow-headers':'content-type','access-control-allow-methods':'GET, POST, OPTIONS'}:{})});res.end(JSON.stringify(body));};
+  const send=(code,body)=>{if(res.destroyed||res.writableEnded)return;const encoded=code===204?'':JSON.stringify(body);res.writeHead(code,{'content-type':'application/json','content-length':Buffer.byteLength(encoded),'cache-control':'no-store','vary':'Origin',...(origin&&origins.has(origin)?{'access-control-allow-origin':origin,'access-control-allow-headers':'content-type','access-control-allow-methods':'GET, POST, OPTIONS'}:{})});res.end(encoded);};
   try {
    if(origin&&!origins.has(origin)) throw new PublicError(403,'origin-not-allowed');
    if(req.method==='OPTIONS') return send(204,{});
